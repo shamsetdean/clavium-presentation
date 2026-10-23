@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  Clavium, page de présentation
+  © 2026 Shams Guettaf, Anthropotech Lab. Tous droits réservés.
+  Voir LICENSE : reproduction et réutilisation interdites sans autorisation écrite.
+  Polices tierces sous licence SIL OFL 1.1 (voir fonts/OFL.txt).
+-->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -28,10 +34,17 @@
 <link rel="preload" as="image" href="images/01-armoire.webp">
 <script>
 document.documentElement.classList.add('js');
-try{
-  if(sessionStorage.getItem('claviumSplash')){document.documentElement.classList.add('no-splash')}
-  else{document.documentElement.classList.add('splash-on')}
-}catch(e){document.documentElement.classList.add('no-splash')}
+/* Aucun stockage dans le navigateur : l'ecran d'accueil est simplement saute
+   lors d'un retour arriere, d'un lien vers une section, ou en venant d'une autre page du site. */
+(function(){
+  var skip = !!location.hash;
+  try{
+    var nav = performance.getEntriesByType('navigation')[0];
+    if(nav && nav.type === 'back_forward') skip = true;
+    if(document.referrer && new URL(document.referrer).origin === location.origin) skip = true;
+  }catch(e){}
+  document.documentElement.classList.add(skip ? 'no-splash' : 'splash-on');
+})();
 </script>
 <style>
 /* Polices hebergees localement (licence SIL OFL 1.1, voir fonts/OFL.txt) : aucune requete externe */
@@ -483,7 +496,7 @@ footer strong{color:var(--cream);font-family:var(--display);font-style:italic;fo
 <footer>
   <div class="in">
     <p><strong>Clavium</strong>, projet d'Anthropotech Lab. Conçu et développé par Shams &amp; Dean pour nos communes en commun.</p>
-    <p>&copy; 2026 Shams &amp; Dean, Anthropotech Lab. Tous droits réservés. Ce site ne dépose aucun cookie et n'utilise aucun traceur.</p>
+    <p>&copy; 2026 Shams Guettaf, Anthropotech Lab. Tous droits réservés. Ce site ne dépose aucun cookie, n'enregistre rien dans votre navigateur et n'utilise aucun traceur. <a href="mentions-legales.html">Mentions légales</a></p>
   </div>
 </footer>
 
@@ -629,12 +642,16 @@ footer strong{color:var(--cream);font-family:var(--display);font-style:italic;fo
 (function(){
   var root = document.documentElement, s = document.getElementById('splash');
   if(!s || !root.classList.contains('splash-on')) return;
-  setTimeout(function(){
+  var done = false;
+  function close(){
+    if(done) return; done = true;
     s.classList.add('out');
     root.classList.remove('splash-on');
-    try{ sessionStorage.setItem('claviumSplash','1'); }catch(e){}
     setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 800);
-  }, 2600);
+  }
+  setTimeout(close, 2600);
+  s.addEventListener('click', close);
+  document.addEventListener('keydown', close, {once:true});
 })();
 </script>
 </body>
